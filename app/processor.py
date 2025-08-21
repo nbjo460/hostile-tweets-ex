@@ -114,6 +114,10 @@ class Processor:
         return self.original_text
 
     def join_series(self):
+        """
+        Joins all series that i build to one DF.
+        :return:
+        """
         df = pd.DataFrame()
         df["id"] = self.id
         df["original_text"] = self.original_text

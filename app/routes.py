@@ -9,4 +9,8 @@ class Routes:
         return {}
     @app.get("/load")
     def load_db(self):
+        """
+        For load the data.
+        :return:
+        """
         return Manager().get_data()

@@ -4,6 +4,10 @@ from bson import json_util
 from pymongo import MongoClient
 
 def connection(func):
+    """
+    Decorator function.
+    Allow to open and close connection each func, with try except.
+   """
     def wrapper(dal, *args, **kwargs):
         client = None
         try:
