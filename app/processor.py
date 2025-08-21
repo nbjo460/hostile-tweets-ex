@@ -8,6 +8,7 @@ class Processor:
         self.df = None
         self.id = None
         self.sentiment = None
+        self.tweets_df = None
         self.rarest_word = None
         self.original_text = None
         self.weapons_detected = None
@@ -21,9 +22,9 @@ class Processor:
         self.id = self.df["TweetID"]
         self.original_text = self.df["Text"]
         self.tweets_df = self.convert_text_to_rows_df()
+        self.sentiment = self.find_emotional_status_text()
         self.rarest_word = self.find_rare_word()
         self.weapons_detected = self.find_weapon()
-        self.sentiment = self.find_emotional_status_text()
         return self.join_series()
 
     def convert_text_to_rows_df(self):
@@ -53,8 +54,6 @@ class Processor:
             series = self.tweets_df.iloc[i]
             counts_word = series.value_counts().sort_values().head(1)
             rares_words = pd.concat([rares_words, counts_word], axis=0)
-        rares_words = rares_words
-        print(rares_words)
         return rares_words
 
     def find_emotional_status_text(self):
@@ -68,21 +67,21 @@ class Processor:
             """
             Receive a dictionary of emotients, and return an emotion.
             :param _emotion_index:
-            :return: str
+            :return: Series
             """
             compound = _emotion_index["compound"]
             if compound > 0.5:
-               return "positive"
+                return pd.Series("positive")
             elif compound > -0.49:
-                return "neutral"
+                return pd.Series("neutral")
             else:
-                return "negative"
+                return pd.Series("negative")
 
         nltk.download('vader_lexicon', download_dir="../data/")
-        emotional = pd.Series([])
+        emotional = pd.Series()
         for i in range(self.original_text.size):
-            emotion_index = SentimentIntensityAnalyzer().polarity_scores(self.tweets_df.iloc[i])
-            emotional = emotional.add(absolute_emotion(emotion_index))
+            emotion_index = SentimentIntensityAnalyzer().polarity_scores(self.original_text.iloc[i])
+            emotional = pd.concat([emotional, absolute_emotion(emotion_index)])
         return emotional
 
     def find_weapon(self):
