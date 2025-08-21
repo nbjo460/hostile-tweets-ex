@@ -6,16 +6,34 @@ from nltk.sentiment.vader import SentimentIntensityAnalyzer
 class Processor:
     def __init__(self):
         self.df = None
+        self.id = None
+        self.sentiment = None
+        self.rarest_word = None
+        self.original_text = None
+        self.weapons_detected = None
 
     def process(self, df):
         """
         Enable all the process functions.
-
         :return:
         """
         self.df = df
-        self.find_rare_word()
-        self.get_emotional_status_text()
+        self.id = self.df["TweetID"]
+        self.original_text = self.df["Text"]
+        self.tweets_df = self.convert_text_to_rows_df()
+        self.rarest_word = self.find_rare_word()
+        self.weapons_detected = self.find_weapon()
+        self.sentiment = self.find_emotional_status_text()
+        return self.join_series()
+
+    def convert_text_to_rows_df(self):
+        """
+        Converting the columns `Text` to df, that each row
+        is one tweet text.
+        Each Statement is a word.
+        :return: DataFrame
+        """
+        return self.original_text.str.split(" ", expand=True)
 
     def find_rare_word(self):
         """
@@ -25,11 +43,19 @@ class Processor:
          1. Split each text to new df column.
          2. Do value_counts.
          3. Sort By.
-         4. Get the first
-         5. Add the result to the original df.
+         4. Get the first.
+         5. Add the result to the original df to a rare_word column.
         :return:
 
         """
+        rares_words = pd.Series()
+        for i in range(self.tweets_df.shape[0]):
+            series = self.tweets_df.iloc[i]
+            counts_word = series.value_counts().sort_values().head(1)
+            rares_words = pd.concat([rares_words, counts_word], axis=0)
+        rares_words = rares_words
+        print(rares_words)
+        return rares_words
 
     def find_emotional_status_text(self):
         """
@@ -38,16 +64,49 @@ class Processor:
         The emotion can be one of them: negative, positive, neutral.
         :return:
         """
-        nltk.download('vader_lexicon', download_dir="../data/",q)
-        tweet = 'i dont love to kill, but i have to kill'
-        result = SentimentIntensityAnalyzer().polarity_scores(tweet)
-        print(result, "../../data")
+        def absolute_emotion(_emotion_index):
+            """
+            Receive a dictionary of emotients, and return an emotion.
+            :param _emotion_index:
+            :return: str
+            """
+            compound = _emotion_index["compound"]
+            if compound > 0.5:
+               return "positive"
+            elif compound > -0.49:
+                return "neutral"
+            else:
+                return "negative"
+
+        nltk.download('vader_lexicon', download_dir="../data/")
+        emotional = pd.Series([])
+        for i in range(self.original_text.size):
+            emotion_index = SentimentIntensityAnalyzer().polarity_scores(self.tweets_df.iloc[i])
+            emotional = emotional.add(absolute_emotion(emotion_index))
+        return emotional
 
     def find_weapon(self):
         """
         Search a weapon in a text.
         By:
+        1. Split each text to new df column.
+         2. Do value_counts.
+         3. Match them.
+         4. Get the first.
+         5. Add the result to the original df to a weapon column.
         :return:
         """
-p = Processor()
-p.process()
+        return self.original_text
+
+    def join_series(self):
+        df = pd.DataFrame()
+        df["id"] = self.id
+        df["original_text"] = self.original_text
+        df["rarest_word"] = self.rarest_word
+        df["sentiment"] = self.sentiment
+        df["weapons_detected"] = self.weapons_detected
+        return df
+
+
+
+

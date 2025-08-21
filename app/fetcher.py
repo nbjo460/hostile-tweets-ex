@@ -43,5 +43,6 @@ class Dal:
         """
         print("Fetching tweets.")
         tweets = list(collection.find())
-        print(f"{tweets.count()} tweets loaded.")
+        print(f"{len(tweets)} tweets loaded.")
         return tweets
+
