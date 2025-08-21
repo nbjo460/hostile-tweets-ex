@@ -43,8 +43,5 @@ class Dal:
         """
         print("Fetching tweets.")
         tweets = list(collection.find())
-        result = json.loads(json_util.dumps(tweets))
         print(f"{tweets.count()} tweets loaded.")
-        return result
-d = Dal()
-print(d.get_tweets())
+        return tweets
