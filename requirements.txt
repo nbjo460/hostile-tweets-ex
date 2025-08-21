@@ -1,1 +1,5 @@
 pymongo
+pandas
+nltk
+fastapi
+uvicorn

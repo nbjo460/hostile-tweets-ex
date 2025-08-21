@@ -4,6 +4,10 @@ from bson import json_util
 from pymongo import MongoClient
 
 def connection(func):
+    """
+    Decorator function.
+    Allow to open and close connection each func, with try except.
+   """
     def wrapper(dal, *args, **kwargs):
         client = None
         try:
@@ -43,8 +47,6 @@ class Dal:
         """
         print("Fetching tweets.")
         tweets = list(collection.find())
-        result = json.loads(json_util.dumps(tweets))
-        print(f"{tweets.count()} tweets loaded.")
-        return result
-d = Dal()
-print(d.get_tweets())
+        print(f"{len(tweets)} tweets loaded.")
+        return tweets
+
