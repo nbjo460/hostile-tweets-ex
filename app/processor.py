@@ -72,17 +72,18 @@ class Processor:
             :return: Series
             """
             compound = _emotion_index["compound"]
-            if compound > 0.5:
+            if 0.5 < compound <= 1:
                 return pd.Series("positive")
-            elif compound > -0.49:
+            elif compound >= -0.5:
                 return pd.Series("neutral")
             else:
                 return pd.Series("negative")
 
         nltk.download('vader_lexicon', download_dir=".")
         emotional = pd.Series()
+        analyze = SentimentIntensityAnalyzer()
         for i in range(self.original_text.size):
-            emotion_index = SentimentIntensityAnalyzer().polarity_scores(self.original_text.iloc[i])
+            emotion_index = analyze.polarity_scores(self.original_text.iloc[i])
             emotional = pd.concat([emotional, absolute_emotion(emotion_index)])
         return emotional
 

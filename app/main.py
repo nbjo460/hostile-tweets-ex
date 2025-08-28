@@ -1,4 +1,3 @@
-from routes import Routes
+import routes
 
-routes = Routes()
 app = routes.app
